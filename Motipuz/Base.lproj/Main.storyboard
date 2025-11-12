@@ -54,7 +54,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7TM-lY-9bm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="368.70229007633588" y="617.6056338028169"/>
+            <point key="canvasLocation" x="273" y="-501"/>
         </scene>
         <!--Daily Puzzle View Controller-->
         <scene sceneID="jDt-kb-gz1">
@@ -64,19 +64,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="今日のパズル" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lkf-Ua-C7w">
-                                <rect key="frame" x="112" y="109" width="169" height="36"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="30"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="HP0-5U-dwm">
-                                <rect key="frame" x="144" y="518" width="104" height="35"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="カレンダー"/>
-                            </button>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gd5-sT-ivZ">
                                 <rect key="frame" x="57" y="202" width="279" height="279"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -89,7 +76,51 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jsd-JB-xpc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="369" y="-70"/>
+            <point key="canvasLocation" x="273" y="234"/>
+        </scene>
+        <!--Puzzle Detail View Controller-->
+        <scene sceneID="gub-58-h6Q">
+            <objects>
+                <viewController storyboardIdentifier="PuzzleDetailViewController" id="d21-R9-NjB" customClass="PuzzleDetailViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="qjb-Xp-LY8">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="evj-Gq-09D">
+                                <rect key="frame" x="76" y="117" width="240" height="55"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NC9-7e-1YV">
+                                <rect key="frame" x="76" y="190" width="240" height="128"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="DPB-0P-8zH">
+                                <rect key="frame" x="0.0" y="373" width="393" height="479"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                            </tableView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qlO-Zs-xrZ">
+                                <rect key="frame" x="304" y="34" width="72" height="35"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="閉じる"/>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="ulY-gp-yfs"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <connections>
+                        <outlet property="dateLabel" destination="evj-Gq-09D" id="xSX-Re-bTg"/>
+                        <outlet property="puzzleImageView" destination="NC9-7e-1YV" id="ZxY-2X-E1J"/>
+                        <outlet property="taskTableView" destination="DPB-0P-8zH" id="8KF-qJ-oaI"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="zMn-cp-sra" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1165.6488549618321" y="931.69014084507046"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="l5t-IS-SbN">
@@ -119,10 +150,11 @@
                         <viewLayoutGuide key="safeArea" id="zDM-XD-GiN"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
+                    <navigationItem key="navigationItem" id="nJV-uq-PaA"/>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vLm-gC-GK4" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1337" y="-61"/>
+            <point key="canvasLocation" x="298" y="932"/>
         </scene>
         <!--Item 1-->
         <scene sceneID="t68-Zd-YV0">
@@ -141,13 +173,13 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="GcS-jS-T31" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-616.03053435114498" y="-70.422535211267615"/>
+            <point key="canvasLocation" x="-582" y="234"/>
         </scene>
-        <!--Item 2-->
+        <!--タスク-->
         <scene sceneID="RlS-2q-7OB">
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="RBy-hn-sfd" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Item 2" id="AzU-th-aUy"/>
+                    <tabBarItem key="tabBarItem" title="タスク" id="AzU-th-aUy"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="hyR-3f-D2X">
                         <rect key="frame" x="0.0" y="59" width="393" height="44"/>
@@ -160,7 +192,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6ia-jf-KaU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-616" y="619"/>
+            <point key="canvasLocation" x="-582" y="-501"/>
         </scene>
         <!--Task Add View Controller-->
         <scene sceneID="Pzo-j1-UgC">
@@ -234,7 +266,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rTD-Ut-BBA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1336.6412213740457" y="618.30985915492965"/>
+            <point key="canvasLocation" x="1167" y="-501"/>
         </scene>
         <!--Goal Setup View Controller-->
         <scene sceneID="9mZ-yA-Vu3">
@@ -277,7 +309,25 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="BnE-Fv-aBS" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2089.3129770992364" y="612.67605633802816"/>
+            <point key="canvasLocation" x="-2456" y="-136"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="Ra1-UB-rOB">
+            <objects>
+                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="4Gp-5Y-c5h" sceneMemberID="viewController">
+                    <toolbarItems/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="PcE-Le-8kj">
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <nil name="viewControllers"/>
+                    <connections>
+                        <segue destination="tdN-qp-20h" kind="relationship" relationship="rootViewController" id="OTW-wF-X3E"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="CHx-Aw-agW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-582" y="932"/>
         </scene>
     </scenes>
     <resources>

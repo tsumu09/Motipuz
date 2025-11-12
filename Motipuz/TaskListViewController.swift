@@ -17,7 +17,6 @@ class TaskListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "今日のタスク"
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add,
                                                             target: self,
                                                             action: #selector(addButtonTapped))
@@ -70,13 +69,62 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "TaskCell")
+        let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") ??
+                   UITableViewCell(style: .subtitle, reuseIdentifier: "TaskCell")
+        
         let task = taskManager.dailyPuzzle.tasks[indexPath.row]
+        
+        // ✅ チェックマーク（左側）
+        if cell.viewWithTag(100) == nil {
+            let checkmark = UIImageView()
+            checkmark.tag = 100
+            checkmark.translatesAutoresizingMaskIntoConstraints = false
+            cell.contentView.addSubview(checkmark)
+            
+            NSLayoutConstraint.activate([
+                checkmark.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 16),
+                checkmark.centerYAnchor.constraint(equalTo: cell.contentView.centerYAnchor),
+                checkmark.widthAnchor.constraint(equalToConstant: 18),
+                checkmark.heightAnchor.constraint(equalToConstant: 18)
+            ])
+        }
+        
+        if let checkmark = cell.viewWithTag(100) as? UIImageView {
+            if task.isDone {
+                checkmark.image = UIImage(systemName: "checkmark")
+                checkmark.tintColor = .systemBlue
+            } else {
+                checkmark.image = nil
+            }
+        }
+        
+        if task.isDone {
+                let attributedText = NSAttributedString(
+                    string: task.title,
+                    attributes: [
+                        .strikethroughStyle: NSUnderlineStyle.single.rawValue
+                    ]
+                )
+                cell.textLabel?.attributedText = attributedText
+            } else {
+                cell.textLabel?.attributedText = nil
+                cell.textLabel?.text = title
+            }
+        
+        // ✅ テキストの位置調整（チェックと重ならないように）
+        cell.indentationLevel = 2
+        cell.indentationWidth = 18
+        
         cell.textLabel?.text = task.title
-        cell.detailTextLabel?.text = "重要度：\(task.importance)　重さ：\(task.weight)"
-        cell.accessoryType = task.isDone ? .checkmark : .none
+        cell.textLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
+        
+        // アクセサリは使わない
+        cell.accessoryType = .none
+        
         return cell
     }
+
+
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let task = taskManager.dailyPuzzle.tasks[indexPath.row]

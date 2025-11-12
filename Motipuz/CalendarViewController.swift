@@ -6,24 +6,50 @@
 //
 
 import UIKit
+import FSCalendar
 
-class CalendarViewController: UIViewController {
+class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDataSource {
+
+    private var calendar = FSCalendar()
+    private var puzzleImagesByDate: [Date: UIImage] = [:]
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = "カレンダー"
+        view.backgroundColor = .systemBackground
 
-        // Do any additional setup after loading the view.
+        calendar.dataSource = self
+        calendar.delegate = self
+        calendar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(calendar)
+
+        NSLayoutConstraint.activate([
+            calendar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            calendar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            calendar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            calendar.heightAnchor.constraint(equalToConstant: 350)
+        ])
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        calendar.frame.size.height = 600
     }
-    */
 
+    
+    func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
+        showPuzzleDetail(for: date)
+    }
+
+    func showPuzzleDetail(for date: Date) {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let detailVC = storyboard.instantiateViewController(withIdentifier: "PuzzleDetailViewController") as! PuzzleDetailViewController
+        detailVC.selectedDate = date
+        detailVC.modalPresentationStyle = .pageSheet
+        present(detailVC, animated: true)
+    }
+
+
+
+    
 }
