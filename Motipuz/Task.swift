@@ -15,5 +15,7 @@ struct Task: Codable, Identifiable {
     var isDone: Bool = false
     
     var value: Int { importance * weight }
+    
+
 }
 

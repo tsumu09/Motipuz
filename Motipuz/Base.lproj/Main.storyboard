@@ -64,19 +64,31 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Gd5-sT-ivZ">
-                                <rect key="frame" x="57" y="202" width="279" height="279"/>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="veJ-nQ-fqe">
+                                <rect key="frame" x="0.0" y="112" width="393" height="627"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            </imageView>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g20-Gx-xZJ">
+                                        <rect key="frame" x="6" y="19" width="380" height="380"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    </stackView>
+                                </subviews>
+                                <color key="backgroundColor" red="0.91875789141414144" green="0.8091266169180571" blue="0.88126089797350415" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="IBz-I1-mCY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" id="Ycq-IN-3g2"/>
+                    <connections>
+                        <outlet property="puzzleContainerView" destination="veJ-nQ-fqe" id="qAE-yJ-3xB"/>
+                        <outlet property="puzzleStackView" destination="g20-Gx-xZJ" id="fh3-Z1-Jsd"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jsd-JB-xpc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="273" y="234"/>
+            <point key="canvasLocation" x="270.99236641221376" y="233.80281690140845"/>
         </scene>
         <!--Puzzle Detail View Controller-->
         <scene sceneID="gub-58-h6Q">
