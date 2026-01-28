@@ -26,17 +26,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             // 通常起動 → タブバー構成
             let tabBarVC = UITabBarController()
             
-            // 1️⃣ タスク一覧
+            // タスク一覧
             let taskListVC = storyboard.instantiateViewController(withIdentifier: "TaskListViewController")
             let nav1 = UINavigationController(rootViewController: taskListVC)
             nav1.tabBarItem = UITabBarItem(title: "タスク", image: UIImage(systemName: "checklist"), tag: 0)
 
-            // 2️⃣ パズル画面
-            let puzzleVC = storyboard.instantiateViewController(withIdentifier: "DailyPuzzleVC")
+            // パズル画面
+            let puzzleVC = storyboard.instantiateViewController(withIdentifier: "PuzzleViewController")
             let nav2 = UINavigationController(rootViewController: puzzleVC)
             nav2.tabBarItem = UITabBarItem(title: "パズル", image: UIImage(systemName: "square.grid.3x3"), tag: 1)
 
-            // 3️⃣ カレンダー画面
+            // カレンダー画面
             let calendarVC = storyboard.instantiateViewController(withIdentifier: "CalendarViewController")
             let nav3 = UINavigationController(rootViewController: calendarVC)
             nav3.tabBarItem = UITabBarItem(title: "カレンダー", image: UIImage(systemName: "calendar"), tag: 2)

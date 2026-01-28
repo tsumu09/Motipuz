@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
-    <device id="retina6_12" orientation="portrait" appearance="light"/>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="ww9-ff-yWC">
+    <device id="retina6_0" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
@@ -13,7 +13,7 @@
             <objects>
                 <viewController storyboardIdentifier="TaskListViewController" id="3MB-hT-8jw" customClass="TaskListViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="52d-xk-lmW">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SU6-0N-z4i">
@@ -56,34 +56,31 @@
             </objects>
             <point key="canvasLocation" x="273" y="-501"/>
         </scene>
-        <!--Daily Puzzle View Controller-->
+        <!--Puzzle View Controller-->
         <scene sceneID="jDt-kb-gz1">
             <objects>
-                <viewController storyboardIdentifier="DailyPuzzleVC" id="m9K-zW-umE" customClass="DailyPuzzleViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="hbw-eg-Oak">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                <viewController storyboardIdentifier="PuzzleViewController" id="m9K-zW-umE" customClass="PuzzleViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="dlB-GP-stn">
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="veJ-nQ-fqe">
-                                <rect key="frame" x="0.0" y="112" width="393" height="627"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Vl6-fB-310">
+                                <rect key="frame" x="46" y="250" width="300" height="300"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <stackView opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g20-Gx-xZJ">
-                                        <rect key="frame" x="6" y="19" width="380" height="380"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    </stackView>
-                                </subviews>
-                                <color key="backgroundColor" red="0.91875789141414144" green="0.8091266169180571" blue="0.88126089797350415" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                            </imageView>
+                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="YyS-nf-U0L">
+                                <rect key="frame" x="0.0" y="615" width="393" height="140"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="0.56999999999999995" colorSpace="calibratedRGB"/>
                             </view>
                         </subviews>
-                        <viewLayoutGuide key="safeArea" id="IBz-I1-mCY"/>
+                        <viewLayoutGuide key="safeArea" id="r7S-cT-Dwa"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     </view>
                     <navigationItem key="navigationItem" id="Ycq-IN-3g2"/>
                     <connections>
-                        <outlet property="puzzleContainerView" destination="veJ-nQ-fqe" id="qAE-yJ-3xB"/>
-                        <outlet property="puzzleStackView" destination="g20-Gx-xZJ" id="fh3-Z1-Jsd"/>
+                        <outlet property="puzzleImageView" destination="Vl6-fB-310" id="9Gk-mk-Q0Z"/>
+                        <outlet property="trayView" destination="YyS-nf-U0L" id="eam-5q-wJn"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jsd-JB-xpc" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -95,7 +92,7 @@
             <objects>
                 <viewController storyboardIdentifier="PuzzleDetailViewController" id="d21-R9-NjB" customClass="PuzzleDetailViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="qjb-Xp-LY8">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="evj-Gq-09D">
@@ -157,7 +154,7 @@
             <objects>
                 <viewController storyboardIdentifier="CalendarViewController" id="tdN-qp-20h" customClass="CalendarViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="uI7-yX-5RS">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <viewLayoutGuide key="safeArea" id="zDM-XD-GiN"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -175,7 +172,7 @@
                     <tabBarItem key="tabBarItem" title="Item 1" id="Ns7-zc-r2T"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="2sy-wP-08O">
-                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <rect key="frame" x="0.0" y="47" width="390" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -194,7 +191,7 @@
                     <tabBarItem key="tabBarItem" title="タスク" id="AzU-th-aUy"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="hyR-3f-D2X">
-                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <rect key="frame" x="0.0" y="47" width="390" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
@@ -206,12 +203,12 @@
             </objects>
             <point key="canvasLocation" x="-582" y="-501"/>
         </scene>
-        <!--Task Add View Controller-->
+        <!--Add Task View Controller-->
         <scene sceneID="Pzo-j1-UgC">
             <objects>
-                <viewController storyboardIdentifier="TaskAddViewController" id="Lq3-vH-sN8" customClass="TaskAddViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AddTaskViewController" id="Lq3-vH-sN8" customClass="AddTaskViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="z7I-dp-2Oa">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="タスク名" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LTq-tO-z9v">
@@ -250,8 +247,14 @@
                                     <segment title="低"/>
                                 </segments>
                             </segmentedControl>
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oDO-Ni-MyR">
+                                <rect key="frame" x="77" y="393" width="140" height="34"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="SLl-3L-ywn">
-                                <rect key="frame" x="291" y="612" width="56" height="35"/>
+                                <rect key="frame" x="293" y="79" width="56" height="35"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title="追加"/>
@@ -259,12 +262,6 @@
                                     <action selector="addButtonTapped:" destination="Lq3-vH-sN8" eventType="touchUpInside" id="19D-Gy-iPG"/>
                                 </connections>
                             </button>
-                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oDO-Ni-MyR">
-                                <rect key="frame" x="77" y="393" width="140" height="34"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6F5-fl-2j9"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -285,7 +282,7 @@
             <objects>
                 <viewController storyboardIdentifier="GoalSetupViewController" id="Wig-6x-z6a" customClass="GoalSetupViewController" customModule="Motipuz" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="2fH-K2-pcK">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <rect key="frame" x="0.0" y="0.0" width="390" height="844"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="１日の目標を決めよう！" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6tj-2c-96U">
@@ -329,7 +326,7 @@
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="4Gp-5Y-c5h" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="PcE-Le-8kj">
-                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <rect key="frame" x="0.0" y="47" width="390" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>

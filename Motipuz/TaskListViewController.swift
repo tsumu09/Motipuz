@@ -7,7 +7,7 @@
 
 import UIKit
 
-class TaskListViewController: UIViewController {
+class TaskListViewController: UIViewController, AddTaskDelegate{
     
     
     @IBOutlet weak var tableView: UITableView!
@@ -34,37 +34,45 @@ class TaskListViewController: UIViewController {
                 addButton.setTitleColor(.white, for: .normal)
     }
 
-    
-
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        tableView.reloadData() // ここで最新のタスクを反映
+        tableView.reloadData()
     }
-
     
     private func setupTableView() {
         tableView.dataSource = self
         tableView.delegate = self
     }
     
-    
-    
-    
-    
-    
     @IBAction func addButtonTapped(_ sender: UIButton) {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            if let addVC = storyboard.instantiateViewController(withIdentifier: "TaskAddViewController") as? TaskAddViewController {
+            if let addVC = storyboard.instantiateViewController(withIdentifier: "AddTaskViewController") as? AddTaskViewController {
                 addVC.modalPresentationStyle = .formSheet
+                addVC.delegate = self
                 present(addVC, animated: true)
             }
         }
+    
+    func toggleTask(id: UUID) {
+        TaskManager.shared.toggleTask(id: id)
+
+        NotificationCenter.default.post(
+            name: .taskCompleted,
+            object: id
+        )
+    }
 }
 extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     
+    func didAddTask(_ task: Task) {
+        print("didAddTask called:", task)
+        taskManager.addTask(task)   
+        tableView.reloadData()
+    }
+
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        taskManager.dailyPuzzle.tasks.count
+        TaskManager.shared.dailyPuzzle.tasks.count
     }
     
     func tableView(_ tableView: UITableView,
@@ -72,9 +80,8 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell") ??
                    UITableViewCell(style: .subtitle, reuseIdentifier: "TaskCell")
         
-        let task = taskManager.dailyPuzzle.tasks[indexPath.row]
+        let task = TaskManager.shared.dailyPuzzle.tasks[indexPath.row]
         
-        // ✅ チェックマーク（左側）
         if cell.viewWithTag(100) == nil {
             let checkmark = UIImageView()
             checkmark.tag = 100
@@ -99,36 +106,35 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
         }
         
         if task.isDone {
-                let attributedText = NSAttributedString(
-                    string: task.title,
-                    attributes: [
-                        .strikethroughStyle: NSUnderlineStyle.single.rawValue
-                    ]
-                )
-                cell.textLabel?.attributedText = attributedText
-            } else {
-                cell.textLabel?.attributedText = nil
-                cell.textLabel?.text = title
-            }
+            cell.textLabel?.attributedText = NSAttributedString(
+                string: task.title,
+                attributes: [ .strikethroughStyle: NSUnderlineStyle.single.rawValue, // 線のスタイル
+                              .strikethroughColor: UIColor.systemGray
+                ]
+            )
+        } else {
+            cell.textLabel?.attributedText = nil
+            cell.textLabel?.text = task.title
+        }
         
-        // ✅ テキストの位置調整（チェックと重ならないように）
         cell.indentationLevel = 2
         cell.indentationWidth = 18
-        
-        cell.textLabel?.text = task.title
         cell.textLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
-        
-        // アクセサリは使わない
         cell.accessoryType = .none
         
         return cell
     }
-
-
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let task = taskManager.dailyPuzzle.tasks[indexPath.row]
         taskManager.toggleTask(id: task.id)
+
+        // タスク完了通知
+        NotificationCenter.default.post(
+            name: .taskCompleted,
+            object: task.id
+        )
+
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
 }

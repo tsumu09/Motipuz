@@ -21,8 +21,6 @@ final class TaskManager {
         dailyPuzzle.tasks.filter { $0.isDone }.map { $0.value }.reduce(0, +)
     }
     
-    
-    
     var gridSize: Int {
         switch totalValue {
         case 0..<50: return 3
@@ -34,6 +32,10 @@ final class TaskManager {
     func addTask(_ task: Task) {
         dailyPuzzle.tasks.append(task)
         save()
+    }
+    
+    func getTasks() -> [Task] {
+        return dailyPuzzle.tasks
     }
     
     func toggleTask(id: UUID) {
