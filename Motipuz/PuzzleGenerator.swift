@@ -13,6 +13,10 @@ func makePuzzleGuideImage(tasks: [Task], size: CGFloat) -> UIImage {
     let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
     
     let pieImage = renderer.image { _ in
+        // Light background for the fitting area
+        UIColor.systemTeal.withAlphaComponent(0.08).setFill()
+        UIBezierPath(rect: CGRect(x: 0, y: 0, width: size, height: size)).fill()
+
         let total = tasks.map { $0.value }.reduce(0, +)
         guard total > 0 else { return }
         
@@ -24,17 +28,6 @@ func makePuzzleGuideImage(tasks: [Task], size: CGFloat) -> UIImage {
         var startAngle: CGFloat = -.pi / 2
         
         UIColor.systemGray.setStroke()
-        
-        // 外周円
-        let outerCircle = UIBezierPath(
-            arcCenter: center,
-            radius: radius,
-            startAngle: 0,
-            endAngle: .pi * 2,
-            clockwise: true
-        )
-        outerCircle.lineWidth = 2
-        outerCircle.stroke()
         
         // 最後の境界線（円を閉じる）
         let lastLine = UIBezierPath()
@@ -78,6 +71,10 @@ func makePuzzleGuideImage(tasks: [Task], size: CGFloat) -> UIImage {
     )
     
     return finalRenderer.image { _ in
+        let bg = UIColor.systemTeal.withAlphaComponent(0.01)
+        bg.setFill()
+        UIBezierPath(rect: CGRect(x: 0, y: 0, width: innerSide, height: innerSide)).fill()
+
         let clipPath = UIBezierPath(rect: CGRect(
             x: 0,
             y: 0,
@@ -99,4 +96,3 @@ func color(for task: Task) -> UIColor {
         alpha: 1
     )
 }
-

@@ -12,14 +12,31 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     private var pieces: [PuzzlePieceView] = []
     
     @IBOutlet weak var puzzleImageView: UIImageView!
-    @IBOutlet weak var trayView: UIView!
+    @IBOutlet weak var trayCollectionView: UICollectionView!
+    @IBOutlet weak var trayLeftButton: UIButton!
+    @IBOutlet weak var trayRightButton: UIButton!
     var dailyPuzzle: DailyPuzzle = TaskManager.loadTodayPuzzle()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        trayCollectionView.dataSource = self
+        trayCollectionView.delegate = self
+        trayCollectionView.register(PuzzleTrayCell.self, forCellWithReuseIdentifier: PuzzleTrayCell.reuseIdentifier)
+        trayCollectionView.showsHorizontalScrollIndicator = false
+        trayCollectionView.clipsToBounds = false
+        trayCollectionView.isScrollEnabled = false
+        if let layout = trayCollectionView.collectionViewLayout as? UICollectionViewFlowLayout {
+            layout.scrollDirection = .horizontal
+            layout.minimumLineSpacing = 12
+            layout.minimumInteritemSpacing = 12
+            layout.sectionInset = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+            layout.estimatedItemSize = .zero
+        }
+
         updatePuzzleImage()
         createPuzzlePieces()
+        updateTrayButtons()
 
         NotificationCenter.default.addObserver(
             self,
@@ -112,74 +129,37 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
         let tasks = TaskManager.shared.dailyPuzzle.tasks
         guard !tasks.isEmpty else { return }
 
-        // 既存ピースを一旦削除
-        pieces.forEach { $0.removeFromSuperview() }
         pieces.removeAll()
 
         let puzzleSize: CGFloat = 300
         let radius = puzzleSize / 2
         let total = tasks.map { $0.value }.reduce(0, +)
         guard total > 0 else { return }
-        print("PUZZLE radius:", puzzleSize)
         // 正解位置（パズル中央）
         let imageFrame = puzzleImageView.imageFrameInView
-
-        let correctCenter = trayView.convert(
+        let correctCenter = view.convert(
             CGPoint(x: imageFrame.midX, y: imageFrame.midY),
             from: puzzleImageView
         )
-        let dot = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 10))
-        dot.backgroundColor = .red
-        dot.layer.cornerRadius = 5
-        dot.center = correctCenter
-        trayView.addSubview(dot)
         
-        
-        // 🔽 トレイ内レイアウト設定
-        let spacing: CGFloat = 20
-        let scale: CGFloat = 0.45
-       
-
-        let trayWidth = trayView.bounds.width
-        let squareSide = radius * 2.12
-        let pieceSizeInTray = squareSide * scale
-        let totalPiecesWidth =
-            CGFloat(tasks.count) * pieceSizeInTray +
-            CGFloat(tasks.count - 1) * spacing
-
-        var currentX =
-            max(spacing, (trayWidth - totalPiecesWidth) / 2) + pieceSizeInTray / 2
-
-        let centerY = trayView.bounds.midY
-
         var startAngle: CGFloat = -.pi / 2
 
         for task in tasks {
             let value = CGFloat(task.value)
             let endAngle = startAngle + (value / CGFloat(total)) * 2 * .pi
 
-            let startCenter = CGPoint(
-                x: currentX,
-                y: centerY
-            )
-
             let piece = PuzzlePieceView(
                 task: task,
-                startCenter: startCenter,
+                startCenter: .zero,
                 correctCenter: correctCenter,
                 puzzleRadius: radius,
                 startAngle: startAngle,
                 endAngle: endAngle
             )
-            trayView.addSubview(piece)
+            piece.onSnapBackToTray = { [weak self] piece in
+                self?.returnPieceToTray(piece)
+            }
             piece.setInTray()
-            
-            let blue = UIView(frame: CGRect(x: 0, y: 0, width: 8, height: 8))
-            blue.backgroundColor = .blue
-            blue.layer.cornerRadius = 4
-            blue.center = piece.center
-            trayView.addSubview(blue)
-            
             // 完了タスクだけアンロック
             if task.isDone {
                 piece.unlock()
@@ -188,11 +168,123 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             
             pieces.append(piece)
 
-            currentX += pieceSizeInTray + spacing
             startAngle = endAngle
         }
+        
+        trayCollectionView.reloadData()
+        updateTrayButtons()
     }
     
+}
+
+// MARK: - Tray Scroll Buttons
+extension PuzzleViewController {
+    @IBAction func scrollTrayLeft(_ sender: UIButton) {
+        scrollTray(by: -1)
+    }
+
+    @IBAction func scrollTrayRight(_ sender: UIButton) {
+        scrollTray(by: 1)
+    }
+
+    private func scrollTray(by delta: Int) {
+        let count = pieces.count
+        guard count > 0 else { return }
+        let itemsPerPage = 2
+        let maxPage = max(0, (count - 1) / itemsPerPage)
+        let currentPage = currentTrayPage(itemsPerPage: itemsPerPage)
+        let targetPage = max(0, min(maxPage, currentPage + delta))
+        let targetIndex = targetPage * itemsPerPage
+        let indexPath = IndexPath(item: min(targetIndex, count - 1), section: 0)
+        scrollTrayTo(indexPath: indexPath, animated: true)
+        updateTrayButtons(targetPage: targetPage, maxPage: maxPage)
+    }
+
+    private func currentTrayPage(itemsPerPage: Int) -> Int {
+        let offset = trayCollectionView.contentOffset.x + trayCollectionView.adjustedContentInset.left
+        let pageWidth = max(1, trayCollectionView.bounds.width)
+        return Int(round(offset / pageWidth))
+    }
+
+    private func scrollTrayTo(indexPath: IndexPath, animated: Bool) {
+        trayCollectionView.layoutIfNeeded()
+        if let layout = trayCollectionView.collectionViewLayout as? UICollectionViewFlowLayout,
+           let attrs = layout.layoutAttributesForItem(at: indexPath) {
+            let x = attrs.frame.minX - layout.sectionInset.left
+            trayCollectionView.setContentOffset(CGPoint(x: x, y: 0), animated: animated)
+        } else {
+            trayCollectionView.scrollToItem(at: indexPath, at: .left, animated: animated)
+        }
+    }
+
+    private func updateTrayButtons(targetPage: Int? = nil, maxPage: Int? = nil) {
+        let itemsPerPage = 2
+        let count = pieces.count
+        let maxP = maxPage ?? max(0, (count - 1) / itemsPerPage)
+        let currentP = targetPage ?? currentTrayPage(itemsPerPage: itemsPerPage)
+
+        let leftEnabled = currentP > 0
+        let rightEnabled = currentP < maxP
+
+        trayLeftButton.isEnabled = leftEnabled
+        trayRightButton.isEnabled = rightEnabled
+        trayLeftButton.alpha = leftEnabled ? 1.0 : 0.3
+        trayRightButton.alpha = rightEnabled ? 1.0 : 0.3
+    }
+}
+
+extension PuzzleViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        pieces.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: PuzzleTrayCell.reuseIdentifier,
+            for: indexPath
+        ) as! PuzzleTrayCell
+
+        let piece = pieces[indexPath.item]
+        piece.onSnapBackToTray = { [weak self] piece in
+            self?.returnPieceToTray(piece)
+        }
+
+        if piece.isInTray {
+            cell.setPiece(piece, dragContainer: view)
+        }
+
+        return cell
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
+        guard let layout = collectionViewLayout as? UICollectionViewFlowLayout else {
+            let width = max(1, collectionView.bounds.width / 2)
+            return CGSize(width: width, height: collectionView.bounds.height)
+        }
+        let insets = layout.sectionInset
+        let spacing = layout.minimumLineSpacing
+        let availableWidth = collectionView.bounds.width - insets.left - insets.right - spacing
+        let width = max(1, availableWidth / 2)
+        let height = width
+        return CGSize(width: width, height: height)
+    }
+}
+
+private extension PuzzleViewController {
+    func returnPieceToTray(_ piece: PuzzlePieceView) {
+        guard let index = pieces.firstIndex(where: { $0 === piece }) else { return }
+        let indexPath = IndexPath(item: index, section: 0)
+        if let cell = trayCollectionView.cellForItem(at: indexPath) as? PuzzleTrayCell {
+            cell.setPiece(piece, dragContainer: view)
+        } else {
+            piece.removeFromSuperview()
+            trayCollectionView.reloadItems(at: [indexPath])
+        }
+    }
 }
 extension CGRect {
     var center: CGPoint {
