@@ -13,14 +13,19 @@ final class PuzzlePieceView: UIView {
     let task: Task
 
     private let pieLayer = CAShapeLayer()
-    private var panGesture: UIPanGestureRecognizer!
+    private var longPressGesture: UILongPressGestureRecognizer!
     private let puzzleRadius: CGFloat
-    private let trayScale: CGFloat = 0.45
-    private var isInTray = false
+    private var trayScale: CGFloat = 0.45
+    private(set) var isInTray = false
     private let correctPieceCenter: CGPoint
+    private let correctCenter: CGPoint
+    private var trayCenter: CGPoint
+    private weak var dragContainer: UIView?
+    private var dragOffset: CGPoint = .zero
     private(set) var isPlaced = false
     private let angleMid: CGFloat
     private let visualRadius: CGFloat
+    private var cachedVisualCenter: CGPoint?
 
     // MARK: - Init
     init(
@@ -35,21 +40,16 @@ final class PuzzlePieceView: UIView {
         self.puzzleRadius = puzzleRadius
         self.angleMid = (startAngle + endAngle) / 2
         self.visualRadius = puzzleRadius * 1.5
-        // 円の直径
-        let circleDiameter = puzzleRadius * 2
-
         // 円を正方形でマスクするためのViewサイズ
         let squareSide = puzzleRadius * 2
 
    
 
-        // 正解位置用（吸い付き判定）
-        let pieceOffset = puzzleRadius * 0.45
-
-        self.correctPieceCenter = CGPoint(
-            x: correctCenter.x + cos(angleMid) * pieceOffset,
-            y: correctCenter.y + sin(angleMid) * pieceOffset
-        )
+        // 正解位置（中心合わせ）
+        self.correctCenter = correctCenter
+        self.correctPieceCenter = correctCenter
+        // トレイ位置（戻り先）
+        self.trayCenter = startCenter
         
     
         
@@ -93,13 +93,15 @@ final class PuzzlePieceView: UIView {
         pieLayer.mask = squareMask
         layer.addSublayer(pieLayer)
 
-        // ===== ドラッグ =====
-        panGesture = UIPanGestureRecognizer(
+        // ===== 長押しドラッグ =====
+        longPressGesture = UILongPressGestureRecognizer(
             target: self,
-            action: #selector(handlePan(_:))
+            action: #selector(handleLongPress(_:))
         )
-        addGestureRecognizer(panGesture)
-        panGesture.isEnabled = false
+        longPressGesture.minimumPressDuration = 0.25
+        longPressGesture.allowableMovement = 50
+        addGestureRecognizer(longPressGesture)
+        longPressGesture.isEnabled = false
         
         
     }
@@ -112,57 +114,75 @@ final class PuzzlePieceView: UIView {
         super.didMoveToSuperview()
         print("didMoveToSuperview transform:", transform)
     }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        _ = visualCenter()
+    }
     
     // MARK: - Drag
-    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard !isPlaced else { return }
-        if gesture.state == .began && isInTray {
+        switch gesture.state {
+        case .began:
+            beginDragIfNeeded()
+            if let view = superview {
+                let location = gesture.location(in: view)
+                dragOffset = CGPoint(x: location.x - center.x, y: location.y - center.y)
+            }
+        case .changed:
+            if let view = superview {
+                let location = gesture.location(in: view)
+                center = CGPoint(x: location.x - dragOffset.x, y: location.y - dragOffset.y)
+            }
+        case .ended, .cancelled, .failed:
+            finishDrag()
+        default:
+            break
+        }
+    }
+
+    private func beginDragIfNeeded() {
+        if isInTray {
             isInTray = false
-
-            let currentCenter = self.center
-
             UIView.animate(withDuration: 0.15) {
                 self.transform = .identity
-                self.center = currentCenter
             }
+            longPressGesture.isEnabled = true
         }
-        
-        let t = gesture.translation(in: superview)
-        center.x += t.x
-        center.y += t.y
-        gesture.setTranslation(.zero, in: superview)
+    }
 
-        if gesture.state == .ended {
+    private func finishDrag() {
+        let currentCenterInDrag: CGPoint
+        if let dragContainer, let currentSuperview = superview {
+            currentCenterInDrag = currentSuperview.convert(center, to: dragContainer)
+        } else {
+            currentCenterInDrag = center
+        }
 
-            let pieceOffset = puzzleRadius * 0.45
+        let dx = currentCenterInDrag.x - correctCenter.x
+        let dy = currentCenterInDrag.y - correctCenter.y
+        let distance = hypot(dx, dy)
 
-            let visualCenter = CGPoint(
-                x: center.x + cos(angleMid) * (visualRadius - pieceOffset),
-                y: center.y + sin(angleMid) * (visualRadius - pieceOffset)
-            )
+        let snapThreshold = puzzleRadius * 0.35
+        print("距離:", distance, " / 閾値:", snapThreshold)
 
-            let correctVisualCenter = CGPoint(
-                x: correctPieceCenter.x + cos(angleMid) * (visualRadius - pieceOffset),
-                y: correctPieceCenter.y + sin(angleMid) * (visualRadius - pieceOffset)
-            )
-
-            let dx = visualCenter.x - correctVisualCenter.x
-            let dy = visualCenter.y - correctVisualCenter.y
-            let distance = hypot(dx, dy)
-
-            let snapThreshold = puzzleRadius * 0.4
-            print("距離:", distance, " / 閾値:", snapThreshold)
-
-            if distance < snapThreshold {
-                snap()
-            }
+        if distance < snapThreshold {
+            snap()
+        } else {
+            snapBackToTray()
         }
     }
 
     private func snap() {
         self.transform = .identity
         isPlaced = true
-        panGesture.isEnabled = false
+        if let dragContainer, let currentSuperview = superview, currentSuperview !== dragContainer {
+            let centerInDrag = currentSuperview.convert(center, to: dragContainer)
+            removeFromSuperview()
+            dragContainer.addSubview(self)
+            center = centerInDrag
+        }
         UIView.animate(
             withDuration: 0.25,
             delay: 0,
@@ -175,16 +195,132 @@ final class PuzzlePieceView: UIView {
             }
         )
     }
+    
+    private func snapBackToTray() {
+        isInTray = true
+        UIView.animate(
+            withDuration: 0.2,
+            delay: 0,
+            options: [.beginFromCurrentState],
+            animations: {
+                self.center = self.trayCenter
+                self.transform = CGAffineTransform(scaleX: self.trayScale, y: self.trayScale)
+            },
+            completion: { _ in
+                if self.superview == nil {
+                    self.onSnapBackToTray?(self)
+                }
+            }
+        )
+    }
 
     // MARK: - State
     func setInTray() {
         isInTray = true
+        trayCenter = center
         transform = CGAffineTransform(scaleX: trayScale, y: trayScale)
     }
+    
+    func setTrayCenterAligningVisualCenter(to targetCenter: CGPoint) {
+        let visualOffset = visualCenterOffset()
+        center = CGPoint(x: targetCenter.x - visualOffset.x, y: targetCenter.y - visualOffset.y)
+        trayCenter = center
+    }
+    
+    func setTrayScale(_ scale: CGFloat) {
+        trayScale = scale
+        if isInTray {
+            transform = CGAffineTransform(scaleX: trayScale, y: trayScale)
+        }
+    }
+    
+    func setDragContainer(_ dragContainer: UIView) {
+        self.dragContainer = dragContainer
+    }
+
+    var onSnapBackToTray: ((PuzzlePieceView) -> Void)?
 
     func unlock() {
         
-        panGesture.isEnabled = true
+        longPressGesture.isEnabled = true
+    }
+
+    private func visualCenterOffset() -> CGPoint {
+        let c = visualCenter()
+        let dx = c.x - bounds.midX
+        let dy = c.y - bounds.midY
+        return CGPoint(x: dx * trayScale, y: dy * trayScale)
+    }
+
+    private func visualCenter() -> CGPoint {
+        if let cachedVisualCenter {
+            return cachedVisualCenter
+        }
+        let size = bounds.size
+        guard size.width > 1, size.height > 1 else {
+            let fallback = CGPoint(x: bounds.midX, y: bounds.midY)
+            cachedVisualCenter = fallback
+            return fallback
+        }
+
+        let scale: CGFloat = 1
+        let width = Int(size.width * scale)
+        let height = Int(size.height * scale)
+        let bytesPerRow = width * 4
+        guard let ctx = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: bytesPerRow,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            let fallback = CGPoint(x: bounds.midX, y: bounds.midY)
+            cachedVisualCenter = fallback
+            return fallback
+        }
+
+        ctx.setAllowsAntialiasing(true)
+        ctx.translateBy(x: 0, y: CGFloat(height))
+        ctx.scaleBy(x: scale, y: -scale)
+        pieLayer.render(in: ctx)
+
+        guard let data = ctx.data else {
+            let fallback = CGPoint(x: bounds.midX, y: bounds.midY)
+            cachedVisualCenter = fallback
+            return fallback
+        }
+
+        let ptr = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
+        var sumX: CGFloat = 0
+        var sumY: CGFloat = 0
+        var count: CGFloat = 0
+
+        for y in 0..<height {
+            let row = y * bytesPerRow
+            for x in 0..<width {
+                let i = row + x * 4
+                let alpha = ptr[i + 3]
+                if alpha > 10 {
+                    sumX += CGFloat(x)
+                    sumY += CGFloat(y)
+                    count += 1
+                }
+            }
+        }
+
+        if count > 0 {
+            let cx = sumX / count
+            let cy = sumY / count
+            let result = CGPoint(x: cx / scale, y: cy / scale)
+            cachedVisualCenter = result
+            return result
+        } else {
+            let fallback = CGPoint(x: bounds.midX, y: bounds.midY)
+            cachedVisualCenter = fallback
+            return fallback
+        }
     }
 
     func setInPuzzle() {
