@@ -10,6 +10,7 @@ import UIKit
 class PuzzleViewController: UIViewController, AddTaskDelegate {
     private let taskManager = TaskManager.shared
     private var pieces: [PuzzlePieceView] = []
+    // pieces の中で「トレイにあるもの」だけを表示用に使う
     private var trayPieces: [PuzzlePieceView] { pieces.filter { $0.isInTray } }
     
     @IBOutlet weak var puzzleImageView: UIImageView!
@@ -68,6 +69,7 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     
     @objc private func taskCompleted(_ notification: Notification) {
         guard notification.object as? UUID != nil else { return }
+        // 完了/未完了が変わると、角度配分も変わるので全体を作り直す
         reloadPuzzleState()
     }
     
@@ -111,7 +113,8 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     }
 
     func updatePuzzleImage() {
-        let tasks = TaskManager.shared.dailyPuzzle.tasks.filter { $0.isDone }
+        // ガイド画像は「その日の全タスク」で作る
+        let tasks = TaskManager.shared.dailyPuzzle.tasks
         guard !tasks.isEmpty else {
             puzzleImageView.image = nil
             return
@@ -124,7 +127,8 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     }
 
     func createPuzzlePieces() {
-        let tasks = TaskManager.shared.dailyPuzzle.tasks.filter { $0.isDone }
+        let tasks = TaskManager.shared.dailyPuzzle.tasks
+        // 再生成前に「すでにはまっていたID」を覚えて、あとで復元する
         let previouslyPlacedIDs = Set(pieces.filter { $0.isPlaced }.map { $0.task.id })
 
         // 既存ピースを画面・トレイ両方から除去してから作り直す
@@ -175,12 +179,18 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             }
             piece.setDragContainer(view)
 
-            if task.isPlaced || previouslyPlacedIDs.contains(task.id) {
+            // 完了済みかつ配置済みのピースだけは、パズル上に残す
+            if task.isDone && (task.isPlaced || previouslyPlacedIDs.contains(task.id)) {
                 piece.restorePlacedState()
                 view.addSubview(piece)
             } else {
+                // それ以外はトレイに置く（未完了は lock、完了は unlock）
                 piece.setInTray()
-                piece.unlock()
+                if task.isDone {
+                    piece.unlock()
+                } else {
+                    piece.lock()
+                }
             }
 
             
@@ -275,6 +285,11 @@ extension PuzzleViewController: UICollectionViewDataSource, UICollectionViewDele
 
         if piece.isInTray {
             cell.setPiece(piece, dragContainer: view)
+            let isUnlocked = TaskManager.shared.dailyPuzzle.tasks
+                .first(where: { $0.id == piece.task.id })?
+                .isDone ?? false
+            // 未完了セルはグレー + lock アイコン
+            cell.setLockedAppearance(!isUnlocked)
         }
 
         return cell

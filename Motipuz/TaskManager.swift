@@ -42,6 +42,7 @@ final class TaskManager {
         if let index = dailyPuzzle.tasks.firstIndex(where: { $0.id == id }) {
             dailyPuzzle.tasks[index].isDone.toggle()
             if !dailyPuzzle.tasks[index].isDone {
+                // 完了取り消し時は、配置済み状態も解除して矛盾を防ぐ
                 dailyPuzzle.tasks[index].isPlaced = false
             }
             save()

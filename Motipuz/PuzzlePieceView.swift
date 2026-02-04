@@ -244,10 +244,12 @@ final class PuzzlePieceView: UIView {
 
     func unlock() {
         
+        // 完了タスクはドラッグ可能にする
         longPressGesture.isEnabled = true
     }
 
     func lock() {
+        // 未完了タスクはドラッグ不可にする
         longPressGesture.isEnabled = false
     }
 
@@ -335,6 +337,7 @@ final class PuzzlePieceView: UIView {
     }
 
     func restorePlacedState() {
+        // 画面再描画後でも「はめた状態」を復元する
         isPlaced = true
         isInTray = false
         transform = .identity
