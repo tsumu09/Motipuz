@@ -99,7 +99,7 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
         if let checkmark = cell.viewWithTag(100) as? UIImageView {
             if task.isDone {
                 checkmark.image = UIImage(systemName: "checkmark")
-                checkmark.tintColor = .systemBlue
+                checkmark.tintColor = .magenta
             } else {
                 checkmark.image = nil
             }
@@ -109,7 +109,7 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
             cell.textLabel?.attributedText = NSAttributedString(
                 string: task.title,
                 attributes: [ .strikethroughStyle: NSUnderlineStyle.single.rawValue, // 線のスタイル
-                              .strikethroughColor: UIColor.systemGray
+                              .strikethroughColor: UIColor.black
                 ]
             )
         } else {

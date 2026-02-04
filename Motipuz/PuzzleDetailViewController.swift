@@ -9,21 +9,19 @@ import UIKit
 
 class PuzzleDetailViewController: UIViewController {
     @IBOutlet weak var dateLabel: UILabel!
-    @IBOutlet weak var puzzleImageView: UIImageView!
     @IBOutlet weak var taskTableView: UITableView!
     
     var selectedDate: Date!
-    var puzzleImage: UIImage?
     var tasks: [Task] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         dateLabel.text = formatDate(selectedDate)
-        puzzleImageView.image = puzzleImage
         
         taskTableView.dataSource = self
         taskTableView.delegate = self
+        taskTableView.allowsSelection = false
     }
     
     private func formatDate(_ date: Date) -> String {
@@ -39,10 +37,27 @@ extension PuzzleDetailViewController: UITableViewDataSource, UITableViewDelegate
         tasks.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell", for: indexPath)
-        let task = tasks[indexPath.row]
-        cell.textLabel?.text = task.title
-        return cell
-    }
+    func tableView(
+            _ tableView: UITableView,
+            cellForRowAt indexPath: IndexPath
+        ) -> UITableViewCell {
+
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: "TaskCell",
+                for: indexPath
+            )
+
+            let task = tasks[indexPath.row]
+            cell.textLabel?.text = task.title
+
+            if task.isDone {
+                cell.accessoryType = .checkmark
+                cell.textLabel?.textColor = .secondaryLabel
+            } else {
+                cell.accessoryType = .none
+                cell.textLabel?.textColor = .label
+            }
+
+            return cell
+        }
 }

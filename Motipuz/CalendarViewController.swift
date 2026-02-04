@@ -38,15 +38,36 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
 
     
     func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
-        showPuzzleDetail(for: date)
+
+        let puzzle = TaskManager.loadPuzzle(for: date)
+
+        let vc = storyboard?.instantiateViewController(
+            withIdentifier: "PuzzleDetailViewController"
+        ) as! PuzzleDetailViewController
+
+        vc.selectedDate = date
+        vc.tasks = puzzle.tasks
+
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     func showPuzzleDetail(for date: Date) {
+        
+        // ① その日のパズルを読み込む（Dateのまま）
+        let puzzle = TaskManager.loadPuzzle(for: date)
+
+        // ② 画面生成
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let detailVC = storyboard.instantiateViewController(withIdentifier: "PuzzleDetailViewController") as! PuzzleDetailViewController
+        let detailVC = storyboard.instantiateViewController(
+            withIdentifier: "PuzzleDetailViewController"
+        ) as! PuzzleDetailViewController
+
+        // ③ データを渡す
         detailVC.selectedDate = date
-        detailVC.modalPresentationStyle = .pageSheet
-        present(detailVC, animated: true)
+        detailVC.tasks = puzzle.tasks
+
+        // ④ 画面遷移
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 
 

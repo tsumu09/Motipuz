@@ -194,6 +194,7 @@ final class PuzzlePieceView: UIView {
                 self.transform = .identity
             }
         )
+        TaskManager.shared.markPlaced(taskID: task.id)
     }
     
     private func snapBackToTray() {

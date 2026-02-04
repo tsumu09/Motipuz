@@ -28,8 +28,8 @@ class AddTaskViewController: UIViewController, UITextFieldDelegate {
 
     private func setupUI() {
         addButton.setTitle("追加", for: .normal)
-        addButton.backgroundColor = .systemBlue
-        addButton.tintColor = .white
+//        addButton.backgroundColor = .magenta
+//        addButton.tintColor = .white
         addButton.layer.cornerRadius = 8
 
         taskTitleField.placeholder = "タスク名を入力"
@@ -54,9 +54,12 @@ class AddTaskViewController: UIViewController, UITextFieldDelegate {
         let importance = importanceSegment.selectedSegmentIndex + 1
 
         let task = Task(
+            id: UUID(),
             title: title,
             importance: importance,
-            weight: weight
+            weight: weight,
+            isDone: false,
+            isPlaced: false
         )
         print("delegate:", delegate as Any)
 

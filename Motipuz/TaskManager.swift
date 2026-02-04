@@ -45,11 +45,18 @@ final class TaskManager {
         }
     }
     
-    func save() {
-        if let data = try? JSONEncoder().encode(dailyPuzzle) {
-            UserDefaults.standard.set(data, forKey: "todayPuzzle")
+    static func key(from date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.string(from: date)
         }
-    }
+    
+    func save() {
+            let key = TaskManager.key(from: dailyPuzzle.date)
+            if let data = try? JSONEncoder().encode(dailyPuzzle) {
+                UserDefaults.standard.set(data, forKey: key)
+            }
+        }
     
     var goalValue: Int {
         get {
@@ -62,19 +69,40 @@ final class TaskManager {
 
     
     static func loadTodayPuzzle() -> DailyPuzzle {
-        let today = Calendar.current.startOfDay(for: Date())
-        let goal = UserDefaults.standard.integer(forKey: "dailyGoalValue")
-        
-        if let data = UserDefaults.standard.data(forKey: "todayPuzzle"),
-           let loaded = try? JSONDecoder().decode(DailyPuzzle.self, from: data),
-           Calendar.current.isDate(loaded.date, inSameDayAs: today) {
-            return loaded
+            let today = Calendar.current.startOfDay(for: Date())
+            let key = key(from: today)
+
+            if let data = UserDefaults.standard.data(forKey: key),
+               let puzzle = try? JSONDecoder().decode(DailyPuzzle.self, from: data) {
+                return puzzle
+            }
+
+            return DailyPuzzle(
+                date: today,
+                tasks: [],
+                imageData: nil
+            )
         }
-        
-        // goalValueが0の場合は初期値100を使う
-        return DailyPuzzle(date: today, goalValue: goal > 0 ? goal : 100, tasks: [], imageData: nil)
+
+    
+    static func loadPuzzle(for date: Date) -> DailyPuzzle {
+            let key = key(from: date)
+
+            if let data = UserDefaults.standard.data(forKey: key),
+               let puzzle = try? JSONDecoder().decode(DailyPuzzle.self, from: data) {
+                return puzzle
+            }
+
+            return DailyPuzzle(
+                date: date,
+                tasks: [],
+                imageData: nil
+            )
+        }
+    func markPlaced(taskID: UUID) {
+        if let index = dailyPuzzle.tasks.firstIndex(where: { $0.id == taskID }) {
+            dailyPuzzle.tasks[index].isPlaced = true
+            save()
+        }
     }
-
-
-}
-
+    }
