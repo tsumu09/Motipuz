@@ -42,10 +42,8 @@ extension PuzzleDetailViewController: UITableViewDataSource, UITableViewDelegate
             cellForRowAt indexPath: IndexPath
         ) -> UITableViewCell {
 
-            let cell = tableView.dequeueReusableCell(
-                withIdentifier: "TaskCell",
-                for: indexPath
-            )
+            let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell")
+                ?? UITableViewCell(style: .default, reuseIdentifier: "TaskCell")
 
             let task = tasks[indexPath.row]
             cell.textLabel?.text = task.title

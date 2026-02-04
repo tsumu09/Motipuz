@@ -41,6 +41,9 @@ final class TaskManager {
     func toggleTask(id: UUID) {
         if let index = dailyPuzzle.tasks.firstIndex(where: { $0.id == id }) {
             dailyPuzzle.tasks[index].isDone.toggle()
+            if !dailyPuzzle.tasks[index].isDone {
+                dailyPuzzle.tasks[index].isPlaced = false
+            }
             save()
         }
     }
