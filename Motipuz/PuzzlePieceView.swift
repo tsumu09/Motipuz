@@ -150,6 +150,9 @@ final class PuzzlePieceView: UIView {
             }
             longPressGesture.isEnabled = true
         }
+        func lock() {
+                longPressGesture.isEnabled = false
+            }
     }
 
     private func finishDrag() {
@@ -218,6 +221,7 @@ final class PuzzlePieceView: UIView {
     // MARK: - State
     func setInTray() {
         isInTray = true
+        isPlaced = false
         trayCenter = center
         transform = CGAffineTransform(scaleX: trayScale, y: trayScale)
     }
@@ -325,6 +329,15 @@ final class PuzzlePieceView: UIView {
     }
 
     func setInPuzzle() {
+        isInTray = false
         transform = .identity
+    }
+
+    func restorePlacedState() {
+        isPlaced = true
+        isInTray = false
+        transform = .identity
+        center = correctPieceCenter
+        longPressGesture.isEnabled = false
     }
 }

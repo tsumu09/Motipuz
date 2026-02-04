@@ -10,6 +10,7 @@ import UIKit
 class PuzzleViewController: UIViewController, AddTaskDelegate {
     private let taskManager = TaskManager.shared
     private var pieces: [PuzzlePieceView] = []
+    private var trayPieces: [PuzzlePieceView] { pieces.filter { $0.isInTray } }
     
     @IBOutlet weak var puzzleImageView: UIImageView!
     @IBOutlet weak var trayCollectionView: UICollectionView!
@@ -34,8 +35,7 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             layout.estimatedItemSize = .zero
         }
 
-        updatePuzzleImage()
-        createPuzzlePieces()
+        reloadPuzzleState()
         updateTrayButtons()
 
         NotificationCenter.default.addObserver(
@@ -62,15 +62,12 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        updatePuzzleImage()
+        reloadPuzzleState()
     }
     
     @objc private func taskCompleted(_ notification: Notification) {
-        guard let taskID = notification.object as? UUID else { return }
-
-        if let piece = pieces.first(where: { $0.task.id == taskID }) {
-            piece.unlock()
-        }
+        guard notification.object as? UUID != nil else { return }
+                reloadPuzzleState()
     }
     
     @objc private func piecePlaced() {
@@ -78,7 +75,7 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     }
     
     @objc private func checkClear() {
-        let allPlaced = pieces.allSatisfy { $0.isPlaced }
+        let allPlaced = !pieces.isEmpty && pieces.allSatisfy { $0.isPlaced }
 
         if allPlaced {
             showClearEffect()
@@ -108,12 +105,12 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
 
     func didAddTask(_ task: Task) {
         TaskManager.shared.addTask(task)
-        updatePuzzleImage()
+        reloadPuzzleState()
         print("task added, update puzzle")
     }
 
     func updatePuzzleImage() {
-        let tasks = TaskManager.shared.dailyPuzzle.tasks
+        let tasks = TaskManager.shared.dailyPuzzle.tasks.filter { $0.isDone }
         guard !tasks.isEmpty else {
             puzzleImageView.image = nil
             return
@@ -126,15 +123,29 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     }
 
     func createPuzzlePieces() {
-        let tasks = TaskManager.shared.dailyPuzzle.tasks
-        guard !tasks.isEmpty else { return }
+        let tasks = TaskManager.shared.dailyPuzzle.tasks.filter { $0.isDone }
+                let previouslyPlacedIDs = Set(pieces.filter { $0.isPlaced }.map { $0.task.id })
 
-        pieces.removeAll()
+                // 既存ピースを画面・トレイ両方から除去してから作り直す
+                for piece in pieces {
+                    piece.removeFromSuperview()
+                }
+                pieces.removeAll()
+                view.layoutIfNeeded()
 
+                guard !tasks.isEmpty else {
+                    trayCollectionView.reloadData()
+                    updateTrayButtons()
+                    return
+                }
         let puzzleSize: CGFloat = 300
         let radius = puzzleSize / 2
         let total = tasks.map { $0.value }.reduce(0, +)
-        guard total > 0 else { return }
+        guard total > 0 else {
+                    trayCollectionView.reloadData()
+                    updateTrayButtons()
+                    return
+                }
         // 正解位置（パズル中央）
         let imageFrame = puzzleImageView.imageFrameInView
         let correctCenter = view.convert(
@@ -159,9 +170,13 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             piece.onSnapBackToTray = { [weak self] piece in
                 self?.returnPieceToTray(piece)
             }
-            piece.setInTray()
-            // 完了タスクだけアンロック
-            if task.isDone {
+            piece.setDragContainer(view)
+
+                        if task.isPlaced || previouslyPlacedIDs.contains(task.id) {
+                            piece.restorePlacedState()
+                            view.addSubview(piece)
+                        } else {
+                            piece.setInTray()
                 piece.unlock()
             }
 
@@ -174,7 +189,12 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
         trayCollectionView.reloadData()
         updateTrayButtons()
     }
-    
+    private func reloadPuzzleState() {
+            updatePuzzleImage()
+            createPuzzlePieces()
+            checkClear()
+        }
+
 }
 
 // MARK: - Tray Scroll Buttons
@@ -188,7 +208,7 @@ extension PuzzleViewController {
     }
 
     private func scrollTray(by delta: Int) {
-        let count = pieces.count
+        let count = trayPieces.count
         guard count > 0 else { return }
         let itemsPerPage = 2
         let maxPage = max(0, (count - 1) / itemsPerPage)
@@ -219,7 +239,7 @@ extension PuzzleViewController {
 
     private func updateTrayButtons(targetPage: Int? = nil, maxPage: Int? = nil) {
         let itemsPerPage = 2
-        let count = pieces.count
+        let count = trayPieces.count
         let maxP = maxPage ?? max(0, (count - 1) / itemsPerPage)
         let currentP = targetPage ?? currentTrayPage(itemsPerPage: itemsPerPage)
 
@@ -235,7 +255,7 @@ extension PuzzleViewController {
 
 extension PuzzleViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        pieces.count
+        trayPieces.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -244,7 +264,7 @@ extension PuzzleViewController: UICollectionViewDataSource, UICollectionViewDele
             for: indexPath
         ) as! PuzzleTrayCell
 
-        let piece = pieces[indexPath.item]
+        let piece = trayPieces[indexPath.item]
         piece.onSnapBackToTray = { [weak self] piece in
             self?.returnPieceToTray(piece)
         }
@@ -276,14 +296,9 @@ extension PuzzleViewController: UICollectionViewDataSource, UICollectionViewDele
 
 private extension PuzzleViewController {
     func returnPieceToTray(_ piece: PuzzlePieceView) {
-        guard let index = pieces.firstIndex(where: { $0 === piece }) else { return }
-        let indexPath = IndexPath(item: index, section: 0)
-        if let cell = trayCollectionView.cellForItem(at: indexPath) as? PuzzleTrayCell {
-            cell.setPiece(piece, dragContainer: view)
-        } else {
-            piece.removeFromSuperview()
-            trayCollectionView.reloadItems(at: [indexPath])
-        }
+        piece.removeFromSuperview()
+               trayCollectionView.reloadData()
+               updateTrayButtons()
     }
 }
 extension CGRect {

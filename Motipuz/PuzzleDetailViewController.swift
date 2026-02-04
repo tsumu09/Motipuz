@@ -42,22 +42,24 @@ extension PuzzleDetailViewController: UITableViewDataSource, UITableViewDelegate
             cellForRowAt indexPath: IndexPath
         ) -> UITableViewCell {
 
-            let cell = tableView.dequeueReusableCell(
-                withIdentifier: "TaskCell",
-                for: indexPath
-            )
+            let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell")
+            ?? UITableViewCell(style: .default, reuseIdentifier: "TaskCell")
 
             let task = tasks[indexPath.row]
-            cell.textLabel?.text = task.title
 
             if task.isDone {
-                cell.accessoryType = .checkmark
+                cell.textLabel?.text = task.title
                 cell.textLabel?.textColor = .secondaryLabel
-            } else {
-                cell.accessoryType = .none
-                cell.textLabel?.textColor = .label
-            }
 
+                cell.imageView?.image = UIImage(systemName: "checkmark.circle.fill")
+                cell.imageView?.tintColor = .magenta
+            } else {
+                cell.textLabel?.text = task.title
+                cell.textLabel?.textColor = .label
+
+                cell.imageView?.image = UIImage(systemName: "circle")
+                cell.imageView?.tintColor = .systemGray3
+            }
             return cell
         }
 }
