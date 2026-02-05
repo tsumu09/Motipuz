@@ -110,7 +110,7 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     }
 
     func updatePuzzleImage() {
-        let tasks = TaskManager.shared.dailyPuzzle.tasks.filter { $0.isDone }
+        let tasks = TaskManager.shared.dailyPuzzle.tasks
         guard !tasks.isEmpty else {
             puzzleImageView.image = nil
             return
@@ -123,7 +123,7 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     }
 
     func createPuzzlePieces() {
-        let tasks = TaskManager.shared.dailyPuzzle.tasks.filter { $0.isDone }
+        let tasks = TaskManager.shared.dailyPuzzle.tasks
                 let previouslyPlacedIDs = Set(pieces.filter { $0.isPlaced }.map { $0.task.id })
 
                 // 既存ピースを画面・トレイ両方から除去してから作り直す
@@ -172,12 +172,16 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             }
             piece.setDragContainer(view)
 
-                        if task.isPlaced || previouslyPlacedIDs.contains(task.id) {
+            if task.isDone && (task.isPlaced || previouslyPlacedIDs.contains(task.id)) {
                             piece.restorePlacedState()
                             view.addSubview(piece)
                         } else {
                             piece.setInTray()
-                piece.unlock()
+                            if task.isDone {
+                                                piece.unlock()
+                                            } else {
+                                                piece.lock()
+                                            }
             }
 
             
@@ -271,6 +275,11 @@ extension PuzzleViewController: UICollectionViewDataSource, UICollectionViewDele
 
         if piece.isInTray {
             cell.setPiece(piece, dragContainer: view)
+            let isUnlocked = TaskManager.shared.dailyPuzzle.tasks
+                            .first(where: { $0.id == piece.task.id })?
+                            .isDone ?? false
+                        // 未完了セルはグレー + lock アイコン
+                        cell.setLockedAppearance(!isUnlocked)
         }
 
         return cell

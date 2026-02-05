@@ -150,11 +150,12 @@ final class PuzzlePieceView: UIView {
             }
             longPressGesture.isEnabled = true
         }
-        func lock() {
-                longPressGesture.isEnabled = false
-            }
     }
 
+    func lock() {
+            longPressGesture.isEnabled = false
+        }
+    
     private func finishDrag() {
         let currentCenterInDrag: CGPoint
         if let dragContainer, let currentSuperview = superview {
