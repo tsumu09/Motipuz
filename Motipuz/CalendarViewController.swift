@@ -12,16 +12,22 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
 
     private var calendar = FSCalendar()
     private var puzzleImagesByDate: [Date: UIImage] = [:]
-
+    
+    @IBOutlet weak var perfectCountLabel: UILabel!
+    
+    var currentMonth: Date = Date()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "カレンダー"
-        view.backgroundColor = .systemBackground
 
         calendar.dataSource = self
         calendar.delegate = self
         calendar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(calendar)
+
+        currentMonth = calendar.currentPage
+        updatePerfectCount(for: currentMonth)
 
         NSLayoutConstraint.activate([
             calendar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -29,6 +35,11 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
             calendar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             calendar.heightAnchor.constraint(equalToConstant: 350)
         ])
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updatePerfectCount(for: currentMonth)
     }
     
     override func viewDidLayoutSubviews() {
@@ -69,8 +80,13 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
         // ④ 画面遷移
         navigationController?.pushViewController(detailVC, animated: true)
     }
-
-
-
     
+    func calendarCurrentPageDidChange(_ calendar: FSCalendar) {
+        currentMonth = calendar.currentPage
+        updatePerfectCount(for: currentMonth)
+    }
+    private func updatePerfectCount(for month: Date) {
+        let count = TaskManager.shared.perfectCount(for: month)
+        perfectCountLabel.text = "🏆：\(count)日"
+    }
 }

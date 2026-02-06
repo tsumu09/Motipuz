@@ -10,7 +10,7 @@ import Foundation
 final class TaskManager {
     static let shared = TaskManager()
     private init() {}
-    
+    var dailyResults: [DailyResult] = []
     var dailyPuzzle: DailyPuzzle = TaskManager.loadTodayPuzzle()
     
     var totalValue: Int {
@@ -108,4 +108,48 @@ final class TaskManager {
             save()
         }
     }
+    
+    func saveDailyResult(date: Date, isPerfect: Bool) {
+        var results = loadDailyResults()
+
+        // 同じ日があったら上書き
+        results.removeAll {
+            Calendar.current.isDate($0.date, inSameDayAs: date)
+        }
+
+        results.append(DailyResult(date: date, isPerfect: isPerfect))
+        save(results)
     }
+    
+    func loadDailyResults() -> [DailyResult] {
+            if let data = UserDefaults.standard.data(forKey: "dailyResults"),
+               let results = try? JSONDecoder().decode([DailyResult].self, from: data) {
+                return results
+            }
+            return []
+        }
+    private func save(_ results: [DailyResult]) {
+            if let data = try? JSONEncoder().encode(results) {
+                UserDefaults.standard.set(data, forKey: "dailyResults")
+            }
+        }
+    func checkYesterdayResult(tasks: [Task]) {
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+
+        let isPerfect = tasks.allSatisfy { $0.isDone }
+
+        saveDailyResult(date: yesterday, isPerfect: isPerfect)
+    }
+    
+}
+extension TaskManager {
+    func perfectCount(for month: Date) -> Int {
+        let calendar = Calendar.current
+        let results = loadDailyResults()
+
+        return results.filter {
+            calendar.isDate($0.date, equalTo: month, toGranularity: .month)
+            && $0.isPerfect
+        }.count
+    }
+}
