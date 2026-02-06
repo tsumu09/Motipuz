@@ -188,6 +188,9 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             pieces.append(piece)
 
             startAngle = endAngle
+            piece.onPlaced = { [weak self] in
+                self?.checkAllPlaced()
+            }
         }
         
         trayCollectionView.reloadData()
@@ -198,7 +201,131 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             createPuzzlePieces()
             checkClear()
         }
+    func checkAllPlaced() {
+            let allPlaced = pieces.allSatisfy { $0.isPlaced }
+            if allPlaced {
+                showPerfectAnimation()
+                showConfetti()
+            }
+        }
+    func makeGoldStarImage() -> CGImage? {
+        let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .bold)
+        let gold = UIColor(red: 1.0, green: 0.84, blue: 0.0, alpha: 1.0)
 
+        guard let symbol = UIImage(systemName: "star.fill", withConfiguration: config)?
+            .withTintColor(gold, renderingMode: .alwaysOriginal)
+        else {
+            return nil
+        }
+
+        let renderer = UIGraphicsImageRenderer(size: symbol.size)
+        let image = renderer.image { _ in
+            symbol.draw(in: CGRect(origin: .zero, size: symbol.size))
+        }
+
+        return image.cgImage
+    }
+    func showPerfectAnimation() {
+        let label = UILabel()
+        label.text = "🎉 complete"
+        label.font = .systemFont(ofSize: 32, weight: .bold)
+        label.textAlignment = .center
+        label.alpha = 0
+        label.center = view.center
+        label.bounds.size = CGSize(width: 300, height: 60)
+
+        view.addSubview(label)
+
+        UIView.animate(withDuration: 0.4, animations: {
+            label.alpha = 1
+            label.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+        }) { _ in
+            UIView.animate(withDuration: 0.6, delay: 1.5, animations: {
+                label.alpha = 0
+            }) { _ in
+                label.removeFromSuperview()
+            }
+        }
+        
+
+        let cell = CAEmitterCell()
+        cell.contents = makeGoldStarImage()
+
+        cell.birthRate = 12
+        cell.lifetime = 4
+        cell.velocity = 180
+        cell.velocityRange = 80
+        cell.emissionLongitude = .pi
+        cell.emissionRange = .pi / 3
+        cell.spin = 4
+        cell.spinRange = 6
+
+        cell.scale = 0.15
+        cell.scaleRange = 0.07
+
+        
+        cell.contentsScale = UIScreen.main.scale
+        
+            let emitter = CAEmitterLayer()
+            emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: -10)
+            emitter.emitterShape = .line
+            emitter.emitterSize = CGSize(width: view.bounds.width, height: 1)
+            emitter.emitterCells = [cell]
+
+            view.layer.addSublayer(emitter)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                emitter.birthRate = 0
+            }
+       
+            //  背景フラッシュ
+            UIView.animate(withDuration: 0.2, animations: {
+                self.view.backgroundColor = UIColor.systemYellow.withAlphaComponent(0.15)
+            }) { _ in
+                UIView.animate(withDuration: 0.2) {
+                    self.view.backgroundColor = .systemBackground
+                }
+            }
+        print(makeGoldStarImage() != nil)
+        
+    }
+    func showConfetti() {
+        let emitter = CAEmitterLayer()
+        emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: -10)
+        emitter.emitterShape = .line
+        emitter.emitterSize = CGSize(width: view.bounds.size.width, height: 1)
+
+        let colors: [UIColor] = [
+            .systemRed, .systemBlue, .systemGreen,
+            .systemYellow, .systemPink, .systemPurple
+        ]
+
+        emitter.emitterCells = colors.map { color in
+            let cell = CAEmitterCell()
+            cell.birthRate = 6
+            cell.lifetime = 6.0
+            cell.velocity = 180
+            cell.velocityRange = 80
+            cell.emissionLongitude = .pi
+            cell.emissionRange = .pi / 4
+            cell.spin = 3
+            cell.spinRange = 4
+            cell.scale = 0.05
+            cell.scaleRange = 0.03
+            cell.contents = makeGoldStarImage()
+            return cell
+        }
+
+        view.layer.addSublayer(emitter)
+
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            emitter.birthRate = 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                emitter.removeFromSuperlayer()
+            }
+        }
+    }
 }
 
 // MARK: - Tray Scroll Buttons

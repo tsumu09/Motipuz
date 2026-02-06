@@ -26,7 +26,7 @@ final class PuzzlePieceView: UIView {
     private let angleMid: CGFloat
     private let visualRadius: CGFloat
     private var cachedVisualCenter: CGPoint?
-
+    var onPlaced: (() -> Void)?
     // MARK: - Init
     init(
         task: Task,
@@ -196,7 +196,10 @@ final class PuzzlePieceView: UIView {
             animations: {
                 self.center = self.correctPieceCenter
                 self.transform = .identity
-            }
+            },
+            completion: { _ in
+                        self.onPlaced?()
+                    }
         )
         TaskManager.shared.markPlaced(taskID: task.id)
     }
