@@ -66,7 +66,17 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     
     func didAddTask(_ task: Task) {
         print("didAddTask called:", task)
-        taskManager.addTask(task)   
+        taskManager.addTask(task)
+        let tasks = TaskManager.shared.dailyPuzzle.tasks
+        if !tasks.isEmpty {
+            // タスク追加後は「進捗画像」を作り直してカレンダーに反映する
+            let image = makePuzzleProgressImage(tasks: tasks, size: 300)
+            if let data = image.pngData() {
+                TaskManager.shared.dailyPuzzle.imageData = data
+                TaskManager.shared.save()
+                NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
+            }
+        }
         tableView.reloadData()
     }
 
