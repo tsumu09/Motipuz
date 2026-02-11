@@ -9,11 +9,10 @@ import UIKit
 
 func makePuzzleGuideImage(tasks: [Task], size: CGFloat) -> UIImage {
     
-    // ---- ① 円グラフ（ガイド）を描画 ----
+    // 円グラフを描画
     let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
     
     let pieImage = renderer.image { _ in
-        // Light background for the fitting area
         UIColor.systemTeal.withAlphaComponent(0.08).setFill()
         UIBezierPath(rect: CGRect(x: 0, y: 0, width: size, height: size)).fill()
 
@@ -29,7 +28,7 @@ func makePuzzleGuideImage(tasks: [Task], size: CGFloat) -> UIImage {
         
         UIColor.systemGray.setStroke()
         
-        // 最後の境界線（円を閉じる）
+        // 最後の境界線
         let lastLine = UIBezierPath()
         lastLine.move(to: center)
         lastLine.addLine(
@@ -62,7 +61,7 @@ func makePuzzleGuideImage(tasks: [Task], size: CGFloat) -> UIImage {
     }
     
     
-    // ---- ② 円に内接する正方形にマスク ----
+    // 円に内接する正方形にマスク
     let innerSide = size / sqrt(2)
     let offset = (size - innerSide) / 2
     
@@ -91,8 +90,8 @@ func color(for task: Task) -> UIColor {
     let hue = CGFloat(abs(hash % 360)) / 360.0
     return UIColor(
         hue: hue,
-        saturation: 0.7,
-        brightness: 0.95,
+        saturation: 0.25,
+        brightness: 0.98,
         alpha: 1
     )
 }

@@ -8,7 +8,7 @@
 import UIKit
 import FSCalendar
 
-class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDataSource {
+class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDataSource, FSCalendarDelegateAppearance {
 
     private var calendar = FSCalendar()
     private var puzzleImagesByDate: [Date: UIImage] = [:]
@@ -20,7 +20,9 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "カレンダー"
-
+        calendar.appearance.weekdayTextColor = .magenta
+        calendar.appearance.headerTitleColor = .magenta
+        perfectCountLabel.font = UIFont.boldSystemFont(ofSize: 28)
         calendar.dataSource = self
         calendar.delegate = self
         calendar.translatesAutoresizingMaskIntoConstraints = false
@@ -47,7 +49,31 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
         calendar.frame.size.height = 600
     }
 
-    
+    func perfectCount(for month: Date) -> Int {
+        let calendar = Calendar.current
+        guard let range = calendar.range(of: .day, in: .month, for: month),
+              let firstDayOfMonth = calendar.date(
+                  from: calendar.dateComponents([.year, .month], from: month)
+              )
+        else {
+            return 0
+        }
+
+        var count = 0
+
+        for day in range {
+            if let date = calendar.date(byAdding: .day, value: day - 1, to: firstDayOfMonth) {
+                let puzzle = TaskManager.loadPuzzle(for: date)
+
+                if !puzzle.tasks.isEmpty &&
+                    puzzle.tasks.allSatisfy({ $0.isDone }) {
+                    count += 1
+                }
+            }
+        }
+
+        return count
+    }
     func calendar(_ calendar: FSCalendar, didSelect date: Date, at monthPosition: FSCalendarMonthPosition) {
 
         let puzzle = TaskManager.loadPuzzle(for: date)
@@ -62,9 +88,23 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
         navigationController?.pushViewController(vc, animated: true)
     }
 
+    func calendar(_ calendar: FSCalendar,
+                  appearance: FSCalendarAppearance,
+                  fillDefaultColorFor date: Date) -> UIColor? {
+
+        let puzzle = TaskManager.loadPuzzle(for: date)
+
+        if !puzzle.tasks.isEmpty &&
+            puzzle.tasks.allSatisfy({ $0.isDone }) {
+            return .systemYellow
+        }
+
+        return nil
+    }
+    
     func showPuzzleDetail(for date: Date) {
         
-        // ① その日のパズルを読み込む（Dateのまま）
+        // その日のパズルを読み込む
         let puzzle = TaskManager.loadPuzzle(for: date)
 
         // ② 画面生成
@@ -86,7 +126,7 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
         updatePerfectCount(for: currentMonth)
     }
     private func updatePerfectCount(for month: Date) {
-        let count = TaskManager.shared.perfectCount(for: month)
+        let count = perfectCount(for: month)
         perfectCountLabel.text = "🏆：\(count)日"
     }
 }

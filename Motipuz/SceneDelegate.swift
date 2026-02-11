@@ -25,7 +25,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         } else {
             // 通常起動 → タブバー構成
             let tabBarVC = UITabBarController()
-            
+            tabBarVC.tabBar.tintColor = .magenta
             // タスク一覧
             let taskListVC = storyboard.instantiateViewController(withIdentifier: "TaskListViewController")
             let nav1 = UINavigationController(rootViewController: taskListVC)

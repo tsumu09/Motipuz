@@ -112,33 +112,41 @@ final class TaskManager {
     func saveDailyResult(date: Date, isPerfect: Bool) {
         var results = loadDailyResults()
 
-        // 同じ日があったら上書き
+        // 同じ日のデータがあれば削除（上書き用）
         results.removeAll {
             Calendar.current.isDate($0.date, inSameDayAs: date)
         }
 
-        results.append(DailyResult(date: date, isPerfect: isPerfect))
-        save(results)
+        let newResult = DailyResult(date: date, isPerfect: isPerfect)
+        results.append(newResult)
+
+        if let data = try? JSONEncoder().encode(results) {
+            UserDefaults.standard.set(data, forKey: "dailyResults")
+        }
     }
     
     func loadDailyResults() -> [DailyResult] {
-            if let data = UserDefaults.standard.data(forKey: "dailyResults"),
-               let results = try? JSONDecoder().decode([DailyResult].self, from: data) {
-                return results
-            }
+        guard let data = UserDefaults.standard.data(forKey: "dailyResults"),
+              let results = try? JSONDecoder().decode([DailyResult].self, from: data)
+        else {
             return []
         }
+        return results
+    }
     private func save(_ results: [DailyResult]) {
             if let data = try? JSONEncoder().encode(results) {
                 UserDefaults.standard.set(data, forKey: "dailyResults")
             }
         }
-    func checkYesterdayResult(tasks: [Task]) {
-        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())!
+    func checkYesterdayResult() {
+        let calendar = Calendar.current
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: Date()) else { return }
 
-        let isPerfect = tasks.allSatisfy { $0.isDone }
+        let yesterdayPuzzle = TaskManager.loadPuzzle(for: yesterday)
+        let isPerfect = yesterdayPuzzle.tasks.allSatisfy { $0.isDone }
 
         saveDailyResult(date: yesterday, isPerfect: isPerfect)
+        print(loadDailyResults())
     }
     
 }

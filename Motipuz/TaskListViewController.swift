@@ -21,7 +21,7 @@ class TaskListViewController: UIViewController, AddTaskDelegate{
                                                             target: self,
                                                             action: #selector(addButtonTapped))
         setupTableView()
-      
+        navigationController?.navigationBar.tintColor = .magenta
         
         tableView.dataSource = self
                 tableView.delegate = self

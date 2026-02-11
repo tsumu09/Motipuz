@@ -202,12 +202,17 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             checkClear()
         }
     func checkAllPlaced() {
-            let allPlaced = pieces.allSatisfy { $0.isPlaced }
-            if allPlaced {
-                showPerfectAnimation()
-                showConfetti()
-            }
+        
+        let allPlaced = pieces.allSatisfy { $0.isPlaced }
+
+        if allPlaced {
+            let today = Calendar.current.startOfDay(for: Date())
+            TaskManager.shared.saveDailyResult(date: today, isPerfect: true)
+
+            showPerfectAnimation()
+            showConfetti()
         }
+    }
     func makeGoldStarImage() -> CGImage? {
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .bold)
         let gold = UIColor(red: 1.0, green: 0.84, blue: 0.0, alpha: 1.0)
