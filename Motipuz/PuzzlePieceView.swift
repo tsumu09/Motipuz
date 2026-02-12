@@ -112,7 +112,6 @@ final class PuzzlePieceView: UIView {
 
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
-        print("didMoveToSuperview transform:", transform)
     }
 
     override func layoutSubviews() {

@@ -10,4 +10,5 @@ import Foundation
 extension Notification.Name {
     static let taskCompleted = Notification.Name("taskCompleted")
     static let piecePlaced = Notification.Name("piecePlaced")
+    static let puzzleImageUpdated = Notification.Name("puzzleImageUpdated")
 }

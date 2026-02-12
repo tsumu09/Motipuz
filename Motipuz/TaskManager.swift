@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 final class TaskManager {
     static let shared = TaskManager()
@@ -40,11 +41,17 @@ final class TaskManager {
     
     func toggleTask(id: UUID) {
         if let index = dailyPuzzle.tasks.firstIndex(where: { $0.id == id }) {
+            // 画像更新は「配置が外れた時だけ」にする（isDoneだけでは変えない）
+                        let wasPlaced = dailyPuzzle.tasks[index].isPlaced
             dailyPuzzle.tasks[index].isDone.toggle()
             if !dailyPuzzle.tasks[index].isDone {
                             dailyPuzzle.tasks[index].isPlaced = false
                         }
-            save()
+            if wasPlaced && !dailyPuzzle.tasks[index].isPlaced {
+                            updateImageDataForDailyPuzzle()
+                        } else {
+                            save()
+                        }
         }
     }
     
@@ -105,7 +112,8 @@ final class TaskManager {
     func markPlaced(taskID: UUID) {
         if let index = dailyPuzzle.tasks.firstIndex(where: { $0.id == taskID }) {
             dailyPuzzle.tasks[index].isPlaced = true
-            save()
+            // ピースを置いたら、進捗画像を作り直して保存する
+                       updateImageDataForDailyPuzzle()
         }
     }
     
@@ -148,7 +156,24 @@ final class TaskManager {
         saveDailyResult(date: yesterday, isPerfect: isPerfect)
         print(loadDailyResults())
     }
-    
+    // その日の画像データを「進捗 or ガイド」で作り直す
+       private func updateImageDataForDailyPuzzle() {
+           guard !dailyPuzzle.tasks.isEmpty else {
+               dailyPuzzle.imageData = nil
+               save()
+               NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
+               return
+           }
+
+           let hasPlaced = dailyPuzzle.tasks.contains { $0.isPlaced }
+           let image = hasPlaced
+               ? makePuzzleProgressImage(tasks: dailyPuzzle.tasks, size: 300)
+               : makePuzzleGuideImage(tasks: dailyPuzzle.tasks, size: 300)
+           dailyPuzzle.imageData = image.pngData()
+           save()
+           // カレンダー側に「画像が更新されたよ」と知らせる
+           NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
+       }
 }
 extension TaskManager {
     func perfectCount(for month: Date) -> Int {

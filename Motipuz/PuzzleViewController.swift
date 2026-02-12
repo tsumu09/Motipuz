@@ -106,20 +106,43 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
     func didAddTask(_ task: Task) {
         TaskManager.shared.addTask(task)
         reloadPuzzleState()
+        savePuzzleSnapshotFromTasks()
         print("task added, update puzzle")
     }
+    // タスク追加時に「進捗 or ガイド」の画像を保存してカレンダーへ反映する
+        private func savePuzzleSnapshotFromTasks() {
+            let tasks = TaskManager.shared.dailyPuzzle.tasks
+            guard !tasks.isEmpty else { return }
+            let image = makePuzzleProgressImage(tasks: tasks, size: 300)
+            if let data = image.pngData() {
+                TaskManager.shared.dailyPuzzle.imageData = data
+                TaskManager.shared.save()
+                NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
+            }
+        }
 
     func updatePuzzleImage() {
         let tasks = TaskManager.shared.dailyPuzzle.tasks
         guard !tasks.isEmpty else {
             puzzleImageView.image = nil
+            TaskManager.shared.dailyPuzzle.imageData = nil
+                        TaskManager.shared.save()
+                        NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
             return
         }
 
-        puzzleImageView.image = makePuzzleGuideImage(
+        let guideImage = makePuzzleGuideImage(
             tasks: tasks,
             size: 300
         )
+        puzzleImageView.image = guideImage
+
+                let hasPlacedPiece = tasks.contains { $0.isPlaced }
+                if !hasPlacedPiece, let data = guideImage.pngData() {
+                    TaskManager.shared.dailyPuzzle.imageData = data
+                    TaskManager.shared.save()
+                    NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
+                }
     }
 
     func createPuzzlePieces() {
@@ -202,17 +225,47 @@ class PuzzleViewController: UIViewController, AddTaskDelegate {
             checkClear()
         }
     func checkAllPlaced() {
-        
+        saveProgressSnapshot()
         let allPlaced = pieces.allSatisfy { $0.isPlaced }
 
         if allPlaced {
             let today = Calendar.current.startOfDay(for: Date())
             TaskManager.shared.saveDailyResult(date: today, isPerfect: true)
-
+            saveCompletedSnapshot()
             showPerfectAnimation()
             showConfetti()
         }
     }
+    
+    // 1ピースでも置かれたら、現在の見た目をスナップショット保存する
+        private func saveProgressSnapshot() {
+            guard pieces.contains(where: { $0.isPlaced }) else { return }
+            view.layoutIfNeeded()
+            let targetFrame = puzzleImageView.frame
+            let renderer = UIGraphicsImageRenderer(size: targetFrame.size)
+            let image = renderer.image { context in
+                context.cgContext.translateBy(x: -targetFrame.origin.x, y: -targetFrame.origin.y)
+                view.layer.render(in: context.cgContext)
+            }
+            TaskManager.shared.dailyPuzzle.imageData = image.pngData()
+            TaskManager.shared.save()
+            NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
+        }
+
+        // 全部置けたら、完成状態のスナップショットを保存する
+        private func saveCompletedSnapshot() {
+            view.layoutIfNeeded()
+            let targetFrame = puzzleImageView.frame
+            let renderer = UIGraphicsImageRenderer(size: targetFrame.size)
+            let image = renderer.image { context in
+                context.cgContext.translateBy(x: -targetFrame.origin.x, y: -targetFrame.origin.y)
+                view.layer.render(in: context.cgContext)
+            }
+            TaskManager.shared.dailyPuzzle.imageData = image.pngData()
+            TaskManager.shared.save()
+            NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
+        }
+    
     func makeGoldStarImage() -> CGImage? {
         let config = UIImage.SymbolConfiguration(pointSize: 30, weight: .bold)
         let gold = UIColor(red: 1.0, green: 0.84, blue: 0.0, alpha: 1.0)
