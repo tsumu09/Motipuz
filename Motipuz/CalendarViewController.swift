@@ -14,6 +14,7 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
     private var puzzleImagesByDate: [Date: UIImage] = [:]
     // 連続で更新通知が来ても、1回だけ再描画するためのフラグ
     private var reloadScheduled = false
+    private var didBackfillImageData = false
     
     @IBOutlet weak var perfectCountLabel: UILabel!
     
@@ -54,6 +55,13 @@ class CalendarViewController: UIViewController, FSCalendarDelegate, FSCalendarDa
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if !didBackfillImageData {
+            didBackfillImageData = true
+            let calendar = Calendar.current
+            let start = calendar.date(from: DateComponents(year: 2026, month: 2, day: 1)) ?? Date()
+            let end = calendar.date(from: DateComponents(year: 2026, month: 2, day: 13)) ?? Date()
+            TaskManager.shared.backfillImageData(from: start, to: end)
+        }
         updatePerfectCount(for: currentMonth)
         // 画面に戻るタイミングでカレンダーをまとめて再描画する
         scheduleCalendarReload()

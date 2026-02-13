@@ -109,6 +109,13 @@ final class TaskManager {
                 imageData: nil
             )
         }
+
+    static func savePuzzle(_ puzzle: DailyPuzzle) {
+        let key = key(from: puzzle.date)
+        if let data = try? JSONEncoder().encode(puzzle) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
     func markPlaced(taskID: UUID) {
         if let index = dailyPuzzle.tasks.firstIndex(where: { $0.id == taskID }) {
             dailyPuzzle.tasks[index].isPlaced = true
@@ -186,5 +193,28 @@ extension TaskManager {
             calendar.isDate($0.date, equalTo: month, toGranularity: .month)
             && $0.isPerfect
         }.count
+    }
+
+    // 指定期間の過去データで、imageDataが無い日を埋め直す
+    func backfillImageData(from startDate: Date, to endDate: Date) {
+        let calendar = Calendar.current
+        var date = calendar.startOfDay(for: startDate)
+        let end = calendar.startOfDay(for: endDate)
+
+        while date <= end {
+            var puzzle = TaskManager.loadPuzzle(for: date)
+            if puzzle.imageData == nil && !puzzle.tasks.isEmpty {
+                let hasPlaced = puzzle.tasks.contains { $0.isPlaced }
+                let image = hasPlaced
+                    ? makePuzzleProgressImage(tasks: puzzle.tasks, size: 300)
+                    : makePuzzleGuideImage(tasks: puzzle.tasks, size: 300)
+                puzzle.imageData = image.pngData()
+                TaskManager.savePuzzle(puzzle)
+            }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: date) else { break }
+            date = next
+        }
+
+        NotificationCenter.default.post(name: .puzzleImageUpdated, object: nil)
     }
 }
