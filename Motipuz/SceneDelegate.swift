@@ -19,6 +19,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
         if UserDefaults.standard.object(forKey: "dailyGoalValue") == nil {
+            UserDefaults.standard.set(50, forKey: "dailyGoalValue")
+        }
             // 通常起動 → タブバー構成
             let tabBarVC = UITabBarController()
             tabBarVC.tabBar.tintColor = .magenta
@@ -42,7 +44,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             tabBarVC.viewControllers = [nav1, nav2, nav3]
             
             window.rootViewController = tabBarVC
-        }
+        
         
         self.window = window
         window.makeKeyAndVisible()
