@@ -10,12 +10,12 @@ import Foundation
 struct Task: Codable, Identifiable {
     var id = UUID()
     var title: String
-    var importance: Int     // 1〜3
-    var weight: Int         // 1〜10
+    var importance: Int
+    var weight: Int
     var isDone: Bool = false
     
     var value: Int { importance * weight }
     var isPlaced: Bool
-
+    
 }
 

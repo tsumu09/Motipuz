@@ -9,9 +9,9 @@
 import UIKit
 
 final class PuzzlePieceView: UIView {
-
+    
     let task: Task
-
+    
     private let pieLayer = CAShapeLayer()
     private var longPressGesture: UILongPressGestureRecognizer!
     private let puzzleRadius: CGFloat
@@ -42,32 +42,32 @@ final class PuzzlePieceView: UIView {
         self.visualRadius = puzzleRadius * 1.5
         // 円を正方形でマスクするためのViewサイズ
         let squareSide = puzzleRadius * 2
-
-   
-
-        // 正解位置（中心合わせ）
+        
+        
+        
+        // 正解位置
         self.correctCenter = correctCenter
         self.correctPieceCenter = correctCenter
-        // トレイ位置（戻り先）
+        // トレイ位置
         self.trayCenter = startCenter
         
-    
         
-
-
+        
+        
+        
         super.init(frame: CGRect(
             x: 0,
             y: 0,
             width: squareSide,
             height: squareSide
         ))
-
+        
         self.center = startCenter
         backgroundColor = .clear
-
-        // ===== 円グラフ作成 =====
+        
+        // 円グラフ作成
         let center = CGPoint(x: squareSide / 2, y: squareSide / 2)
-
+        
         let piePath = UIBezierPath()
         
         
@@ -80,20 +80,20 @@ final class PuzzlePieceView: UIView {
             clockwise: true
         )
         piePath.close()
-
+        
         pieLayer.path = piePath.cgPath
         pieLayer.fillColor = color(for: task).cgColor
         pieLayer.strokeColor = UIColor.darkGray.cgColor
         pieLayer.lineWidth = 2
-
-        // ===== 正方形マスク =====
+        
+        // 正方形マスク
         let squareMask = CAShapeLayer()
         squareMask.path = UIBezierPath(rect: bounds).cgPath
-
+        
         pieLayer.mask = squareMask
         layer.addSublayer(pieLayer)
-
-        // ===== 長押しドラッグ =====
+        
+        // 長押しドラッグ
         longPressGesture = UILongPressGestureRecognizer(
             target: self,
             action: #selector(handleLongPress(_:))
@@ -105,15 +105,15 @@ final class PuzzlePieceView: UIView {
         
         
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError()
     }
-
+    
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
     }
-
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         _ = visualCenter()
@@ -140,7 +140,7 @@ final class PuzzlePieceView: UIView {
             break
         }
     }
-
+    
     private func beginDragIfNeeded() {
         if isInTray {
             isInTray = false
@@ -150,10 +150,10 @@ final class PuzzlePieceView: UIView {
             longPressGesture.isEnabled = true
         }
     }
-
+    
     func lock() {
-            longPressGesture.isEnabled = false
-        }
+        longPressGesture.isEnabled = false
+    }
     
     private func finishDrag() {
         let currentCenterInDrag: CGPoint
@@ -162,21 +162,21 @@ final class PuzzlePieceView: UIView {
         } else {
             currentCenterInDrag = center
         }
-
+        
         let dx = currentCenterInDrag.x - correctCenter.x
         let dy = currentCenterInDrag.y - correctCenter.y
         let distance = hypot(dx, dy)
-
+        
         let snapThreshold = puzzleRadius * 0.35
         print("距離:", distance, " / 閾値:", snapThreshold)
-
+        
         if distance < snapThreshold {
             snap()
         } else {
             snapBackToTray()
         }
     }
-
+    
     private func snap() {
         self.transform = .identity
         isPlaced = true
@@ -197,8 +197,8 @@ final class PuzzlePieceView: UIView {
                 self.transform = .identity
             },
             completion: { _ in
-                        self.onPlaced?()
-                    }
+                self.onPlaced?()
+            }
         )
         TaskManager.shared.markPlaced(taskID: task.id)
     }
@@ -220,7 +220,7 @@ final class PuzzlePieceView: UIView {
             }
         )
     }
-
+    
     // MARK: - State
     func setInTray() {
         isInTray = true
@@ -245,21 +245,21 @@ final class PuzzlePieceView: UIView {
     func setDragContainer(_ dragContainer: UIView) {
         self.dragContainer = dragContainer
     }
-
+    
     var onSnapBackToTray: ((PuzzlePieceView) -> Void)?
-
+    
     func unlock() {
         
         longPressGesture.isEnabled = true
     }
-
+    
     private func visualCenterOffset() -> CGPoint {
         let c = visualCenter()
         let dx = c.x - bounds.midX
         let dy = c.y - bounds.midY
         return CGPoint(x: dx * trayScale, y: dy * trayScale)
     }
-
+    
     private func visualCenter() -> CGPoint {
         if let cachedVisualCenter {
             return cachedVisualCenter
@@ -270,7 +270,7 @@ final class PuzzlePieceView: UIView {
             cachedVisualCenter = fallback
             return fallback
         }
-
+        
         let scale: CGFloat = 1
         let width = Int(size.width * scale)
         let height = Int(size.height * scale)
@@ -288,23 +288,23 @@ final class PuzzlePieceView: UIView {
             cachedVisualCenter = fallback
             return fallback
         }
-
+        
         ctx.setAllowsAntialiasing(true)
         ctx.translateBy(x: 0, y: CGFloat(height))
         ctx.scaleBy(x: scale, y: -scale)
         pieLayer.render(in: ctx)
-
+        
         guard let data = ctx.data else {
             let fallback = CGPoint(x: bounds.midX, y: bounds.midY)
             cachedVisualCenter = fallback
             return fallback
         }
-
+        
         let ptr = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
         var sumX: CGFloat = 0
         var sumY: CGFloat = 0
         var count: CGFloat = 0
-
+        
         for y in 0..<height {
             let row = y * bytesPerRow
             for x in 0..<width {
@@ -317,7 +317,7 @@ final class PuzzlePieceView: UIView {
                 }
             }
         }
-
+        
         if count > 0 {
             let cx = sumX / count
             let cy = sumY / count
@@ -330,12 +330,12 @@ final class PuzzlePieceView: UIView {
             return fallback
         }
     }
-
+    
     func setInPuzzle() {
         isInTray = false
         transform = .identity
     }
-
+    
     func restorePlacedState() {
         isPlaced = true
         isInTray = false
